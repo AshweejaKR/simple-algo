@@ -23,13 +23,28 @@ def trading_strategy1():
     # lg.info(infy_data)
     # end test ###
 
+    x = input("TRADE BUY/SELL\n")
+
+    if x.lower() == "buy":
+        return "BUY"
+    elif x.lower() == "sell":
+        return "SELL"
+    else:
+        return "NA"
+
 
 def main():
     # initialize the logger (imported from logger)
     initialize_logger()
 
+    ticker = "SBIN-EQ"
     bot = TradeBot()
-    bot.run_bot()
+    lg.info("TradeBot obj created successfully")
+
+    bot.add_strat("TEST", 1, trading_strategy1)
+    lg.info("Added Trading strategy")
+
+    bot.run_strat(ticker)
     lg.info("Trading bot done ...")
 
 
