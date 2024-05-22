@@ -10,14 +10,13 @@ import time
 import pytz
 import sys
 import json
-import urllib
 
 from logger import *
 
 waitTime = dt.time(8, 59)
-startTime = dt.time(18, 00)
-endTime = dt.time(23, 55)
-sleepTime = 2
+startTime = dt.time(9, 15)
+endTime = dt.time(15, 15)
+sleepTime = 5
 
 def wait_till_market_open():
     global endTime, waitTime, startTime

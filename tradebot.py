@@ -9,12 +9,14 @@ from SmartApi import SmartConnect
 from pyotp import TOTP
 import pandas as pd
 import time
+import urllib
 
 from logger import *
 from utils import *
 
 
 global instrument_list
+ltp_g = 0
 
 def token_lookup(ticker, exchange="NSE"):
     global instrument_list
@@ -34,9 +36,15 @@ def symbol_lookup(token, exchange="NSE"):
 
 def config():
     global instrument_list
-    instrument_url = "https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json"
-    response = urllib.request.urlopen(instrument_url)
-    instrument_list = json.loads(response.read())
+    filename = "instrument_list_file.json"
+    instrument_list = read_from_json(filename)
+
+    if instrument_list is None:
+        instrument_url = "https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json"
+        response = urllib.request.urlopen(instrument_url)
+        instrument_list = json.loads(response.read())
+
+        write_to_json(instrument_list, filename)
 
 
 class TradeBot:
@@ -105,11 +113,13 @@ class TradeBot:
             lg.error('Logout failed ... !')
 
     def run_strat(self, ticker):
+        wait_till_market_open()
         try:
-            while True:
-                lg.info("running {} for {}...".format(self.name, ticker))
+            while is_market_open():
+            # while True:
+                lg.info("running {} for {} ...".format(self.name, ticker))
                 r = self.function()
-                print("RETURN : ", r)
+                # print("RETURN : ", r)
 
                 if r == "BUY" and self.trade != 'BUY':
                     if self.isOpen:
@@ -277,5 +287,21 @@ class TradeBot:
         return df_data
 
     def get_current_price(self, ticker, exchange='NSE'):
-        data = self.smartApi.ltpData(exchange=exchange, tradingsymbol=ticker, symboltoken=token_lookup(ticker))
-        print(data)
+        global ltp_g
+        try:
+            data = self.smartApi.ltpData(exchange=exchange, tradingsymbol=ticker, symboltoken=token_lookup(ticker))
+            if(data['status'] and (data['message'] == 'SUCCESS')):
+                ltp = float(data['data']['ltp'])
+                ltp_g = ltp
+            else:
+                template = "An ERROR occurred. error message : {0!r}"
+                message = template.format(data['message'])
+                lg.error(message)
+        except Exception as err:
+            template = "An exception of type {0} occurred. error message:{1!r}"
+            message = template.format(type(err).__name__, err.args)
+            lg.error(message)
+            lg.error("DATA RECEIVED: {}".format(data))
+            ltp = ltp_g
+
+        return ltp
