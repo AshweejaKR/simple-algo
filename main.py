@@ -41,10 +41,10 @@ def main():
     bot = TradeBot()
     lg.info("TradeBot obj created successfully")
 
-    bot.add_strat("TEST", 1, trading_strategy1)
+    # bot.add_strat("TEST STRATEGY", 1, trading_strategy1)
     lg.info("Added Trading strategy")
 
-    bot.run_strat(ticker)
+    # bot.run_strat(ticker)
     lg.info("Trading bot done ...")
 
 

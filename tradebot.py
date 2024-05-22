@@ -7,16 +7,14 @@ Created on Wed May 22 18:16:04 2024
 
 from SmartApi import SmartConnect
 from pyotp import TOTP
-import urllib
-import json
 import pandas as pd
 import time
 
 from logger import *
 from utils import *
 
-global instrument_list
 
+global instrument_list
 
 def token_lookup(ticker, exchange="NSE"):
     global instrument_list
@@ -34,21 +32,11 @@ def symbol_lookup(token, exchange="NSE"):
             return instrument["name"]
 
 
-def get_keys():
-    # just for testing
-    key_secret = open("D:\\GitHub\\key.txt", "r").read().split()
-    return key_secret
-
-
 def config():
     global instrument_list
     instrument_url = "https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json"
     response = urllib.request.urlopen(instrument_url)
     instrument_list = json.loads(response.read())
-
-
-def sample_strategy():
-    return "NA"
 
 
 class TradeBot:

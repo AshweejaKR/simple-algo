@@ -10,6 +10,7 @@ import time
 import pytz
 import sys
 import json
+import urllib
 
 from logger import *
 
@@ -17,7 +18,6 @@ waitTime = dt.time(8, 59)
 startTime = dt.time(18, 00)
 endTime = dt.time(23, 55)
 sleepTime = 2
-
 
 def wait_till_market_open():
     global endTime, waitTime, startTime
@@ -66,3 +66,13 @@ def read_from_json(filename):
         message = template.format(type(err).__name__, err.args)
         lg.error("ERROR: {}".format(message))
     return data
+
+
+def get_keys():
+    # just for testing
+    key_secret = open("D:\\GitHub\\key.txt", "r").read().split()
+    return key_secret
+
+
+def sample_strategy():
+    return "NA"
