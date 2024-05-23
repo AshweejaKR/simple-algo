@@ -46,9 +46,14 @@ def initialize_bot():
         sleepTime = 1
     elif bot_mode == 2:
         print("TEST/DEBUG ON")
-        waitTime = dt.time(0, 1)
-        startTime = dt.time(0, 5)
-        endTime = dt.time(23, 55)
+        cur_time = dt.datetime.now(pytz.timezone("Asia/Kolkata")).time()
+        x = input("delay wait?")
+        d_ = 0
+        if "y" in x:
+            d_ = 1
+        waitTime = dt.time(cur_time.hour, (cur_time.minute + d_))
+        startTime = dt.time(cur_time.hour, (cur_time.minute + 1))
+        endTime = dt.time(cur_time.hour, (cur_time.minute + 4))
         sleepTime = 1
     else:
         print("DEBUG OFF")

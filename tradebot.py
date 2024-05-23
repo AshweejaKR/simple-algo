@@ -13,6 +13,7 @@ import urllib
 
 from logger import *
 from utils import *
+import config
 
 
 global instrument_list
@@ -35,7 +36,7 @@ def symbol_lookup(token, exchange="NSE"):
             return instrument["symbol"]
 
 
-def config():
+def config_bot():
     global instrument_list
     filename = "instrument_list_file.json"
     instrument_list = read_from_json(filename)
@@ -61,7 +62,7 @@ class TradeBot:
         self.isOpen = False
         self.no_of_exec = 0
 
-        config()
+        config_bot()
         self.login()
 
     def __del__(self):
@@ -124,6 +125,7 @@ class TradeBot:
                 lg.info("running {} for {} ...".format(self.name, ticker))
                 r = self.function(*self._args)
                 # print("RETURN : ", r)
+                # lg.info("SL: {} <---> CP: {} <---> TP: {} \n".format(bp, ltp, sp))
 
                 if r == "BUY" and self.trade != 'BUY':
                     if self.isOpen:
@@ -265,15 +267,18 @@ class TradeBot:
             for i in order_history_response['data']:
                 if i['orderid'] == orderid:
                     lg.debug(str(i))
-                    status = i['status']  # completed/rejected/open/cancelled
+                    status = i['status']  # complete/rejected/open/cancelled
                     break
         except Exception as err:
             template = "An exception of type {0} occurred. error message:{1!r}"
             message = template.format(type(err).__name__, err.args)
             lg.error(message)
             send_to_telegram(message)
-        # for testing only
-        # status = input("updated oder status?? (completed/rejected/open/cancelled) \n")
+        # For test/debug only
+        if config.bot_mode == 2:
+            print("Actual status: ", status)
+            status = input("updated oder status?? (complete/rejected/open/cancelled) \n")
+        ####################
         return status
 
     def get_hist_data(self, ticker, duration, interval, exchange="NSE"):

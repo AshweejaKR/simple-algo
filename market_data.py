@@ -7,7 +7,7 @@ Created on Wed May 22 18:18:04 2024
 
 from logger import *
 from tradebot import *
-
+import config
 
 def get_hist_data(smart_obj, ticker, duration, interval, exchange="NSE"):
     params = {
@@ -28,6 +28,7 @@ def get_hist_data(smart_obj, ticker, duration, interval, exchange="NSE"):
 
 def get_current_price(smart_obj, ticker, exchange='NSE'):
     global ltp_g
+    data = "NO DATA RECEIVED"
     try:
         data = smart_obj.ltpData(exchange=exchange, tradingsymbol=ticker, symboltoken=token_lookup(ticker))
         if(data['status'] and (data['message'] == 'SUCCESS')):
@@ -43,4 +44,9 @@ def get_current_price(smart_obj, ticker, exchange='NSE'):
         lg.error(message)
         lg.error("DATA RECEIVED: {}".format(data))
         ltp = ltp_g
+    # For test/debug only
+    if config.bot_mode == 2:
+        print("Actual LTP: ", ltp)
+        ltp = float(input("Enter modified LTP\n"))
+    ####################
     return ltp
