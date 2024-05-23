@@ -5,40 +5,33 @@ Created on Wed May 22 18:16:33 2024
 @author: ashwe
 """
 
-import datetime as dt
 import time
 import pytz
-import sys
 import json
 
-from logger import *
-
-waitTime = dt.time(8, 59)
-startTime = dt.time(9, 15)
-endTime = dt.time(15, 15)
-sleepTime = 5
+import datetime as dt
+from config import *
+import config
 
 def wait_till_market_open():
-    global endTime, waitTime, startTime
     while True:
         cur_time = dt.datetime.now(pytz.timezone("Asia/Kolkata")).time()
-        if cur_time > endTime or cur_time < waitTime:
+        if cur_time > config.endTime or cur_time < config.waitTime:
             lg.info('Market is closed. \n')
-            sys.exit()
+            return
 
-        if cur_time > startTime:
+        if cur_time > config.startTime:
             break
 
         lg.info("Market is NOT opened waiting ... !")
-        time.sleep(sleepTime)
+        time.sleep(config.sleepTime)
 
     lg.info("Market is Opened ...")
 
 
 def is_market_open(mode='None'):
-    global endTime, waitTime, startTime
     cur_time = dt.datetime.now(pytz.timezone("Asia/Kolkata")).time()
-    if startTime <= cur_time <= endTime:
+    if config.startTime <= cur_time <= config.endTime:
         return True
     else:
         return False

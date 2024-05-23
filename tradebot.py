@@ -21,8 +21,9 @@ ltp_g = 0
 def token_lookup(ticker, exchange="NSE"):
     global instrument_list
     for instrument in instrument_list:
-        if instrument["name"] == ticker and instrument["exch_seg"] == exchange and instrument["symbol"].split('-')[
+        if instrument["symbol"] == ticker and instrument["exch_seg"] == exchange and instrument["symbol"].split('-')[
             -1] == "EQ":
+            lg.debug('token: {} for {}'.format(instrument["token"], ticker))
             return instrument["token"]
 
 
@@ -31,7 +32,7 @@ def symbol_lookup(token, exchange="NSE"):
     for instrument in instrument_list:
         if instrument["token"] == token and instrument["exch_seg"] == exchange and instrument["symbol"].split('-')[
             -1] == "EQ":
-            return instrument["name"]
+            return instrument["symbol"]
 
 
 def config():
@@ -54,6 +55,7 @@ class TradeBot:
         self.client_id = None
         self.interval = 1
         self.function = sample_strategy
+        self._args = None
         self.stop_event = None
         self.trade = "NA"
         self.isOpen = False
@@ -65,10 +67,11 @@ class TradeBot:
     def __del__(self):
         self.logout()
 
-    def add_strat(self, name, interval, function):
+    def add_strat(self, name, interval, function, args=()):
         self.name = name
         self.interval = interval
         self.function = function
+        self._args = args
 
     def login(self):
         keys = get_keys()
@@ -100,6 +103,7 @@ class TradeBot:
             lg.error("ERROR: {}".format(message))
 
     def logout(self):
+        data = None
         try:
             data = self.smartApi.terminateSession(self.client_id)
             if data['status'] and data['message'] == 'SUCCESS':
@@ -109,7 +113,7 @@ class TradeBot:
         except Exception as err:
             template = "An exception of type {0} occurred. error message:{1!r}"
             message = template.format(type(err).__name__, err.args)
-            lg.error("ERROR: {}".format(message))
+            lg.error("{}".format(message))
             lg.error('Logout failed ... !')
 
     def run_strat(self, ticker):
@@ -118,7 +122,7 @@ class TradeBot:
             while is_market_open():
             # while True:
                 lg.info("running {} for {} ...".format(self.name, ticker))
-                r = self.function()
+                r = self.function(*self._args)
                 # print("RETURN : ", r)
 
                 if r == "BUY" and self.trade != 'BUY':
@@ -132,8 +136,9 @@ class TradeBot:
                             count = count + 1
                             time.sleep(sleepTime)
                         status = self.get_oder_status(orderid)
+                        lg.info("current status: {} for orderid: {} for order {}".format(status, orderid, buy_sell))
                         cur_price = 0.0
-                        if status == 'completed':
+                        if status == 'complete':
                             lg.info('Submitting {} Order for {}, Qty = {} at price: {}'.format(buy_sell,
                                                                                                ticker,
                                                                                                quantity,
@@ -154,8 +159,9 @@ class TradeBot:
                             count = count + 1
                             time.sleep(sleepTime)
                         status = self.get_oder_status(orderid)
+                        lg.info("current status: {} for orderid: {} for order {}".format(status, orderid, buy_sell))
                         cur_price = 0.0
-                        if status == 'completed':
+                        if status == 'complete':
                             lg.info('Submitting {} Order for {}, Qty = {} at price: {}'.format(buy_sell,
                                                                                                ticker,
                                                                                                quantity,
@@ -177,8 +183,9 @@ class TradeBot:
                             count = count + 1
                             time.sleep(sleepTime)
                         status = self.get_oder_status(orderid)
+                        lg.info("current status: {} for orderid: {} for order {}".format(status, orderid, buy_sell))
                         cur_price = 0.0
-                        if status == 'completed':
+                        if status == 'complete':
                             lg.info('Submitting {} Order for {}, Qty = {} at price: {}'.format(buy_sell,
                                                                                                ticker,
                                                                                                quantity,
@@ -199,8 +206,9 @@ class TradeBot:
                             count = count + 1
                             time.sleep(sleepTime)
                         status = self.get_oder_status(orderid)
+                        lg.info("current status: {} for orderid: {} for order {}".format(status, orderid, buy_sell))
                         cur_price = 0.0
-                        if status == 'completed':
+                        if status == 'complete':
                             lg.info('Submitting {} Order for {}, Qty = {} at price: {}'.format(buy_sell,
                                                                                                ticker,
                                                                                                quantity,
@@ -236,9 +244,8 @@ class TradeBot:
                 "quantity" : quantity
             }
 
-            lg.debug('params: %s ' % params)
+            lg.debug("params: {} for order: {}".format(params, buy_sell))
             orderid = self.smartApi.placeOrder(params)
-            lg.debug('orderID: %s ' % orderid)
         except Exception as err:
             template = "An exception of type {0} occurred. error message:{1!r}"
             message = template.format(type(err).__name__, err.args)
@@ -266,7 +273,6 @@ class TradeBot:
             lg.error(message)
             send_to_telegram(message)
         # for testing only
-        lg.info("current status: {} for orderid: {} ".format(status, orderid))
         # status = input("updated oder status?? (completed/rejected/open/cancelled) \n")
         return status
 
