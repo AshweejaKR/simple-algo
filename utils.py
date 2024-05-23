@@ -61,8 +61,29 @@ def read_from_json(filename):
 
 
 def get_keys():
-    # just for testing
-    key_secret = open("D:\\GitHub\\key.txt", "r").read().split()
+    config_path = './config/'
+    key_file = config_path + "key.txt"
+    try:
+        key_secret = open(key_file, "r").read().split()
+    except FileNotFoundError:
+        key_secret = []
+        api_key = input("Enter API Key\n")
+        api_secret = input("Enter API Secret\n")
+        client_id = input("Enter Client ID/Username\n")
+        passwd = input("Enter password/PIN\n")
+        totp_str = input("Enter TOTP string\n")
+        key_secret.append(api_key)
+        key_secret.append(api_secret)
+        key_secret.append(client_id)
+        key_secret.append(passwd)
+        key_secret.append(totp_str)
+
+        try:
+            with open(key_file, "w") as f:
+                for key in key_secret:
+                    f.write(f'{key}\n')
+        except Exception as err:
+            print(err)
     return key_secret
 
 

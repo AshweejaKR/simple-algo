@@ -64,6 +64,8 @@ def main():
             config.bot_mode = 1
         elif("test".lower() == sys.argv[1].lower()):
             config.bot_mode = 2
+        elif("edit".lower() == sys.argv[1].lower()):
+            config.bot_mode = 3
         else:
             config.bot_mode = 404
 

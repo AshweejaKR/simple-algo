@@ -17,9 +17,13 @@ def initialize_bot():
     global bot_mode, waitTime, startTime, endTime, sleepTime
     config_path = './config/'
     config_file = config_path + "config.txt"
+
+    if bot_mode == 404 or bot_mode == 3:
+        if bot_mode == 3:
+            key_file = config_path + "key.txt"
+            os.remove(key_file)
+        bot_mode = 0
     if bot_mode:
-        if bot_mode == 404:
-            bot_mode = 0
         try:
             with open(config_file, "w") as f:
                 f.write(str(bot_mode))
