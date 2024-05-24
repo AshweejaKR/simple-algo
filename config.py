@@ -22,7 +22,7 @@ def initialize_bot():
         if bot_mode == 3:
             key_file = config_path + "key.txt"
             os.remove(key_file)
-        bot_mode = 0
+            bot_mode = 0
     if bot_mode:
         try:
             with open(config_file, "w") as f:
@@ -37,7 +37,7 @@ def initialize_bot():
                 bot_mode = int(f.read())
         except Exception as err:
             lg.error(err)
-    lg.info('Initialized BOT Successfull ... ')
+    lg.info('Initialized BOT Successfully ... ')
     if bot_mode == 1:
         print("DEBUG ON")
         waitTime = dt.time(0, 1)
@@ -47,11 +47,7 @@ def initialize_bot():
     elif bot_mode == 2:
         print("TEST/DEBUG ON")
         cur_time = dt.datetime.now(pytz.timezone("Asia/Kolkata")).time()
-        x = input("delay wait?")
-        d_ = 0
-        if "y" in x:
-            d_ = 1
-        waitTime = dt.time(cur_time.hour, (cur_time.minute + d_))
+        waitTime = dt.time(cur_time.hour, cur_time.minute )
         startTime = dt.time(cur_time.hour, (cur_time.minute + 1))
         endTime = dt.time(cur_time.hour, (cur_time.minute + 4))
         sleepTime = 1
