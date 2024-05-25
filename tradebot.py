@@ -55,7 +55,6 @@ class TradeBot:
         self.smartApi = None
         self.client_id = None
         self.interval = 1
-        self.function = sample_strategy
         self._args = None
         self.stop_event = None
         self.trade = "NA"
@@ -68,11 +67,11 @@ class TradeBot:
     def __del__(self):
         self.logout()
 
-    def add_strat(self, name, interval, function, args=()):
-        self.name = name
-        self.interval = interval
-        self.function = function
-        self._args = args
+    def add_strat_obj(self, str_obj):
+        self.str_obj = str_obj
+        self.interval = str_obj.interval
+        self.name = str_obj.name
+        print("added strat: {} with interval: {} ".format(self.name, self.interval))
 
     def login(self):
         keys = get_keys()
@@ -119,11 +118,11 @@ class TradeBot:
 
     def run_strat(self, ticker):
         wait_till_market_open()
+        self.str_obj.init()
         try:
             while is_market_open():
-            # while True:
                 lg.info("running {} for {} ...".format(self.name, ticker))
-                r = self.function(*self._args)
+                r = self.str_obj.run()
                 # print("RETURN : ", r)
                 # lg.info("SL: {} <---> CP: {} <---> TP: {} \n".format(bp, ltp, sp))
 
@@ -150,7 +149,7 @@ class TradeBot:
                             lg.info("exiting short Trade ...")
                             self.no_of_exec = self.no_of_exec + 1
                         else:
-                            lg.error('Sell order NOT submitted, aborting trade!')
+                            lg.error('Buy order NOT submitted, aborting trade!')
                     else:
                         buy_sell = "BUY"
                         quantity = 1
@@ -172,7 +171,7 @@ class TradeBot:
                             self.isOpen = True
                             lg.info("entering Long Trade ...")
                         else:
-                            lg.error('Sell order NOT submitted, aborting trade!')
+                            lg.error('Buy order NOT submitted, aborting trade!')
 
                 elif r == "SELL" and self.trade != 'SELL':
                     if self.isOpen:

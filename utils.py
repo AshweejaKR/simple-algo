@@ -85,7 +85,3 @@ def get_keys():
         except Exception as err:
             print(err)
     return key_secret
-
-
-def sample_strategy():
-    return "NA"
