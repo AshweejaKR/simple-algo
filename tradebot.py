@@ -118,7 +118,7 @@ class TradeBot:
 
     def run_strat(self, ticker):
         wait_till_market_open()
-        self.str_obj.init()
+        self.str_obj.init(ticker)
         try:
             while is_market_open():
                 lg.info("running {} for {} ...".format(self.name, ticker))

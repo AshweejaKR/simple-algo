@@ -49,6 +49,7 @@ def initialize_bot():
         cur_time = dt.datetime.now(pytz.timezone("Asia/Kolkata")).time()
         waitTime = dt.time(cur_time.hour, cur_time.minute )
         startTime = dt.time(cur_time.hour, (cur_time.minute))
+        # TODO: fix bug
         endTime = dt.time(cur_time.hour, (cur_time.minute + 4))
         sleepTime = 1
     else:

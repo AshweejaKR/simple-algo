@@ -6,9 +6,10 @@ Created on Wed May 22 18:15:39 2024
 """
 
 from tradebot import *
-from market_data import *
 from strategy import Strategy
 import config
+
+bot = None
 
 def main():
     # *************** FOR DEBUG ONLY ***************
@@ -32,12 +33,12 @@ def main():
 
     bot = TradeBot()
     lg.info("TradeBot obj created successfully")
+    ticker = "NIFTYBEES-EQ"
 
-    st1_obj = Strategy("TEST STRATEGY")
+    st1_obj = Strategy("TEST STRATEGY", bot)
     bot.add_strat_obj(st1_obj)
     lg.info("Added Trading strategy obj")
 
-    ticker = "NIFTYBEES-EQ"
     bot.run_strat(ticker)
 
     del bot
