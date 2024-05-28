@@ -60,6 +60,7 @@ class TradeBot:
         self.trade = "NA"
         self.isOpen = False
         self.no_of_exec = 0
+        self.long_only = True
 
         config_bot()
         self.login()
@@ -122,14 +123,19 @@ class TradeBot:
         try:
             while is_market_open():
                 lg.info("running {} for {} ...".format(self.name, ticker))
-                r = self.str_obj.run()
-                # print("RETURN : ", r)
+                tr = self.str_obj.run()
+                # print("RETURN : ", tr)
                 # lg.info("SL: {} <---> CP: {} <---> TP: {} \n".format(bp, ltp, sp))
 
-                if r == "BUY" and self.trade != 'BUY':
+                # To make trade only long
+                if self.long_only:
+                    if self.trade == "NA" and tr == "SELL":
+                        tr = "NA"
+
+                if tr == "BUY" and self.trade != 'BUY':
                     if self.isOpen:
                         buy_sell = "BUY"
-                        quantity = 1
+                        quantity = self.str_obj.quantity
                         orderid = self.place_order(ticker, quantity, buy_sell)
                         count = 0
                         while self.get_oder_status(orderid) == 'open':
@@ -152,7 +158,7 @@ class TradeBot:
                             lg.error('Buy order NOT submitted, aborting trade!')
                     else:
                         buy_sell = "BUY"
-                        quantity = 1
+                        quantity = self.str_obj.quantity
                         orderid = self.place_order(ticker, quantity, buy_sell)
                         count = 0
                         while self.get_oder_status(orderid) == 'open':
@@ -173,10 +179,10 @@ class TradeBot:
                         else:
                             lg.error('Buy order NOT submitted, aborting trade!')
 
-                elif r == "SELL" and self.trade != 'SELL':
+                elif tr == "SELL" and self.trade != 'SELL':
                     if self.isOpen:
                         buy_sell = "SELL"
-                        quantity = 1
+                        quantity = self.str_obj.quantity
                         orderid = self.place_order(ticker, quantity, buy_sell)
                         count = 0
                         while self.get_oder_status(orderid) == 'open':
@@ -199,7 +205,7 @@ class TradeBot:
                             lg.error('Sell order NOT submitted, aborting trade!')
                     else:
                         buy_sell = "SELL"
-                        quantity = 1
+                        quantity = self.str_obj.quantity
                         orderid = self.place_order(ticker, quantity, buy_sell)
                         count = 0
                         while self.get_oder_status(orderid) == 'open':
@@ -246,7 +252,10 @@ class TradeBot:
             }
 
             lg.debug("params: {} for order: {}".format(params, buy_sell))
-            orderid = self.smartApi.placeOrder(params)
+            if config.bot_mode == 2:
+                orderid = "DUMMY ORDER ID FOR TEST"
+            else:
+                orderid = self.smartApi.placeOrder(params)
         except Exception as err:
             template = "An exception of type {0} occurred. error message:{1!r}"
             message = template.format(type(err).__name__, err.args)
@@ -261,7 +270,11 @@ class TradeBot:
     def get_oder_status(self, orderid):
         status = 'NA'
         time.sleep(sleepTime)
-        order_history_response = self.smartApi.orderBook()
+        if config.bot_mode == 2:
+            order_history_response = {'status': True, 'message': 'SUCCESS', 'errorcode': '', 'data': []}
+        else:
+            order_history_response = self.smartApi.orderBook()
+            print(order_history_response)
         try:
             for i in order_history_response['data']:
                 if i['orderid'] == orderid:

@@ -11,8 +11,20 @@ class Strategy:
         self.name = name
         self.botobj = obj
         self.interval = interval
+        self.quantity = 4
+        self.buy_p = 0.995
+        self.sell_p = 1.01
+        self.takeProfit = 9999.9999
+        self.stoploss = 0.001
+        self.isEnter = True
         print("Strategy obj created with name: {} ...".format(self.name))
     
+    def set_takeprofit(self, entryPrice):
+        self.takeProfit = (self.sell_p * entryPrice)
+
+    def set_stoploss(self, entryPrice):
+        self.stoploss = 0.5 * entryPrice
+
     def init(self, ticker):
         self.ticker = ticker
         print("Initialize strategy for trade for Strat: {} ...".format(self.name))
@@ -34,10 +46,18 @@ class Strategy:
 
         cur_price = get_current_price(self.botobj.smartApi, self.ticker)
 
-        if self.prev_low > cur_price:
+        lg.info("self.prev_low: {}, current price: {}".format(self.prev_low, cur_price))
+        lg.info('SL %.2f <-- %.2f --> %.2f TP' % (self.stoploss, cur_price, self.takeProfit))
+        # if self.prev_low > cur_price:
+        if(cur_price <= self.buy_p * self.prev_low) and self.isEnter:
+            self.set_takeprofit(cur_price)
+            self.set_stoploss(cur_price)
+            self.isEnter = False
             return "BUY"
         
-        elif self.prev_high < cur_price:
+        # elif self.prev_high < cur_price:
+        elif((cur_price > self.takeProfit) or (cur_price < self.stoploss)):
+            self.isEnter = True
             return "SELL"
         
         else:
