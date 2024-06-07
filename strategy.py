@@ -34,7 +34,6 @@ class Strategy:
         lg.info(stock_data)
         self.prev_high = max(stock_data.iloc[-1]['high'], stock_data.iloc[-2]['high'])
         self.prev_low = min(stock_data.iloc[-1]['low'], stock_data.iloc[-2]['low'])
-        self.prev_high = 100.00
         # simple trading strategy to test bot working
         # get current price
         ltp = 0.0
