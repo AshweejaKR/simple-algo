@@ -72,7 +72,7 @@ class TradeBot:
         self.str_obj = str_obj
         self.interval = str_obj.interval
         self.name = str_obj.name
-        print("added strat: {} with interval: {} ".format(self.name, self.interval))
+        lg.info("added strat: {} with interval: {} ".format(self.name, self.interval))
 
     def login(self):
         keys = get_keys()
@@ -120,6 +120,21 @@ class TradeBot:
     def run_strat(self, ticker):
         wait_till_market_open()
         self.str_obj.init(ticker)
+        data = load_positions(ticker)
+        lg.info(data)
+        if data is not None:
+            try:
+                if ticker == data['ticker']:
+                    self.str_obj.quantity = data['quantity']
+                    self.trade = data['order_type']
+                    self.str_obj.entryprice = data['entryprice']
+                    self.isOpen = True
+                    self.str_obj.isEntered = True
+            except Exception as err:
+                template = "An exception of type {0} occurred. error message:{1!r}"
+                message = template.format(type(err).__name__, err.args)
+                lg.error("ERROR: {}".format(message))
+
         try:
             while is_market_open():
                 lg.info("running {} for {} ...".format(self.name, ticker))
@@ -153,6 +168,7 @@ class TradeBot:
                             self.trade = 'NA'
                             self.isOpen = False
                             lg.info("exiting short Trade ...")
+                            remove_positions(ticker)
                             self.no_of_exec = self.no_of_exec + 1
                         else:
                             lg.error('Buy order NOT submitted, aborting trade!')
@@ -167,14 +183,16 @@ class TradeBot:
                             time.sleep(sleepTime)
                         status = self.get_oder_status(orderid)
                         lg.info("current status: {} for orderid: {} for order {}".format(status, orderid, buy_sell))
-                        cur_price = 0.0
+                        cur_price = self.str_obj.cur_price
+                        self.str_obj.entryprice = cur_price
                         if status == 'complete':
                             lg.info('Submitting {} Order for {}, Qty = {} at price: {}'.format(buy_sell,
                                                                                                ticker,
                                                                                                quantity,
-                                                                                               cur_price))
+                                                                                               self.str_obj.entryprice))
                             self.trade = "BUY"
                             self.isOpen = True
+                            save_positions(ticker, quantity, buy_sell, self.str_obj.entryprice)
                             lg.info("entering Long Trade ...")
                         else:
                             lg.error('Buy order NOT submitted, aborting trade!')
@@ -200,6 +218,7 @@ class TradeBot:
                             self.trade = 'NA'
                             self.isOpen = False
                             lg.info("exiting Long Trade ...")
+                            remove_positions(ticker)
                             self.no_of_exec = self.no_of_exec + 1
                         else:
                             lg.error('Sell order NOT submitted, aborting trade!')
@@ -215,13 +234,15 @@ class TradeBot:
                         status = self.get_oder_status(orderid)
                         lg.info("current status: {} for orderid: {} for order {}".format(status, orderid, buy_sell))
                         cur_price = 0.0
+                        self.str_obj.entryprice = cur_price
                         if status == 'complete':
                             lg.info('Submitting {} Order for {}, Qty = {} at price: {}'.format(buy_sell,
                                                                                                ticker,
                                                                                                quantity,
-                                                                                               cur_price))
+                                                                                               self.str_obj.entryprice))
                             self.trade = "SELL"
                             self.isOpen = True
+                            save_positions(ticker, quantity, buy_sell, self.str_obj.entryprice)
                             lg.info("entering short Trade ...")
                         else:
                             lg.error('Sell order NOT submitted, aborting trade!')
@@ -274,7 +295,7 @@ class TradeBot:
             order_history_response = {'status': True, 'message': 'SUCCESS', 'errorcode': '', 'data': []}
         else:
             order_history_response = self.smartApi.orderBook()
-            print(order_history_response)
+            lg.info(order_history_response)
         try:
             for i in order_history_response['data']:
                 if i['orderid'] == orderid:
@@ -288,7 +309,7 @@ class TradeBot:
             send_to_telegram(message)
         # For test/debug only
         if config.bot_mode == 2:
-            print("Actual status: ", status)
+            lg.info("Actual status: ".format(status))
             status = "complete"#input("updated oder status?? (complete/rejected/open/cancelled) \n")
         ####################
         return status

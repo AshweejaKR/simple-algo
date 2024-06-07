@@ -36,6 +36,8 @@ def main():
     ticker = "NIFTYBEES-EQ"
 
     st1_obj = Strategy("TEST STRATEGY", bot)
+    st1_obj.set_takeprofit(1.0)
+    st1_obj.set_stoploss(5.0)
     bot.add_strat_obj(st1_obj)
     lg.info("Added Trading strategy obj")
 

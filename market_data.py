@@ -45,7 +45,7 @@ def get_current_price(smart_obj, ticker, exchange='NSE'):
         ltp = ltp_g
     # For test/debug only
     if config.bot_mode == 2:
-        print("Actual LTP: ", ltp)
+        lg.info("Actual LTP: ".format(ltp))
         ltp = float(input("Enter modified LTP\n"))
     ####################
     return ltp

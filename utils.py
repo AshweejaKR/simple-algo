@@ -8,6 +8,7 @@ Created on Wed May 22 18:16:33 2024
 import time
 import pytz
 import json
+import os.path
 
 import datetime as dt
 from config import *
@@ -83,5 +84,44 @@ def get_keys():
                 for key in key_secret:
                     f.write(f'{key}\n')
         except Exception as err:
-            print(err)
+            template = "An exception of type {0} occurred. error message:{1!r}"
+            message = template.format(type(err).__name__, err.args)
+            lg.error("ERROR: {}".format(message))
     return key_secret
+
+def save_positions(ticker, quantity, order_type, entryprice):
+    pos_path = './data/'
+    try:
+        os.mkdir(pos_path)
+    except Exception as err:
+        template = "An exception of type {0} occurred. error message:{1!r}"
+        message = template.format(type(err).__name__, err.args)
+        lg.error("ERROR: {}".format(message))
+    pos_file_name = ticker + "_trade_data.json"
+    currentpos_path = pos_path + pos_file_name
+
+    data = {
+        "ticker" : ticker,
+        "quantity" : quantity,
+        "order_type" : order_type,
+        "entryprice" : entryprice,
+    }
+
+    write_to_json(data, currentpos_path)
+
+def load_positions(ticker):
+    pos_path = './data/'
+    pos_file_name = ticker + "_trade_data.json"
+    currentpos_path = pos_path + pos_file_name
+    data = None
+    
+    if os.path.exists(currentpos_path):
+        data = read_from_json(currentpos_path)
+
+    return data
+
+def remove_positions(ticker):
+    pos_path = './data/'
+    pos_file_name = ticker + "_trade_data.json"
+    currentpos_path = pos_path + pos_file_name
+    os.remove(currentpos_path)
